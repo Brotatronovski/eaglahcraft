@@ -1,1 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samboosa Unblocked Games</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background: transparent !important;
+            background-color: rgba(0, 0, 0, 0) !important;
+        }
+    </style>
+</head>
+<body>
 
+<html><head><base href="https://451464343-atari-embeds.googleusercontent.com/embeds/11a5d96386cf44974aa473be9464dc0c/inner-frame-minified.html?jsh=m%3B%2F_%2Fscs%2Fabc-static%2F_%2Fjs%2Fk%3Dgapi.lb.en.gh7qIZtzO5w.O%2Fd%3D1%2Frs%3DAHpOoo84YKT1RVy0T6hcXi5rH3LooB1WCw%2Fm%3D__features__" target="_blank">
+      <script>
+        (function() {
+          // Listen during capturing phase to intercept before <base target="_blank"> takes effect.
+          document.addEventListener('click', function(e) {
+            // Find the nearest ancestor anchor (handles nested icons, spans, svgs).
+            var el = e.target;
+            var anchor = null;
+            while (el && el !== document) {
+              if (el.tagName && el.tagName.toLowerCase() === 'a') {
+                anchor = el;
+                break;
+              }
+              el = el.parentElement;
+            }
+            if (!anchor) return;
+
+            // Only intercept relative in-page fragment links, not external links with hashes.
+            var href = anchor.getAttribute('href');
+            if (!href) return;
+            href = href.trim();
+            if (!href.startsWith('#')) return;
+
+            // Prevent default <base target="_blank"> navigation to a new blank tab.
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Handle empty anchor or top anchor.
+            if (href === '#' || href === '#top') {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              return;
+            }
+
+            // Resolve target element by id, falling back to legacy name attribute.
+            var targetId = href.slice(1);
+            try {
+              targetId = decodeURIComponent(targetId);
+            } catch (err) {}
+
+            var targetEl = document.getElementById(targetId);
+            if (!targetEl) {
+              try {
+                var escaped = window.CSS && CSS.escape ? CSS.escape(targetId) : targetId.replace(/["\\]/g, '\\$&');
+                targetEl = document.querySelector('[name="' + escaped + '"]');
+              } catch (err) {}
+            }
+
+            // Smoothly scroll to the target within the embed and update URL hash history.
+            if (targetEl) {
+              targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              if (window.history && window.history.pushState) {
+                window.history.pushState(null, '', href);
+              }
+            }
+          }, true); // useCapture: true is critical to preempt <base target="_blank">
+        })();
+      </script>
+    </head><body><div id="container">
+  <iframe id="fr" width="100%" height="100%" frameborder="0" allowfullscreen=""></iframe>
+  <button class="play-button" type="button" onclick="PlayTo(this)">CLICK TO PLAY</button>
+  <p id="unblocked-text">G+</p>
+  <button class="fullscreen-button" type="button" onclick="openFullscreen()">FULLSCREEN</button>
+</div>
+
+<style>
+  .play-button { padding: 20px 40px; background: #000; color: #fff; border: 2px solid #4a148c; border-radius: 10px; font: bold 24px Arial; cursor: pointer; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1001; }
+  .play-button:hover { background: #4a148c; }
+  .fullscreen-button { padding: 10px 15px; background: #000; color: #fff; border: 2px solid #4a148c; border-radius: 5px; font: bold 14px Arial; cursor: pointer; position: fixed; bottom: 20px; right: 20px; z-index: 1002; }
+  .fullscreen-button:hover { background: #4a148c; }
+  body, html { margin: 0; padding: 0; overflow: hidden; height: 100%; }
+</style>
+
+<script>
+  const DB_NAME = 'GameCacheDB';
+  const STORE_NAME = 'GameFiles';
+  const CACHE_DURATION = 90 * 24 * 60 * 60 * 1000; // 3 ay
+  const FILE_URL = 'https://cdn.jsdelivr.net/gh/tsubasamasa/rag@1a15078/2.xml';
+
+  function openDB() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME, 1);
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        db.createObjectStore(STORE_NAME, { keyPath: 'url' });
+      };
+      request.onsuccess = (event) => resolve(event.target.result);
+      request.onerror = (event) => reject(event.target.error);
+    });
+  }
+
+  async function saveToCache(url, content) {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.put({ url: url, content: content, timestamp: Date.now() });
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(new Error('Cache error'));
+    });
+  }
+
+  async function getFileFromCache(url) {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readonly');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.get(url);
+      request.onsuccess = async (event) => {
+        const data = event.target.result;
+        if (data && (Date.now() - data.timestamp) < CACHE_DURATION) {
+          resolve(data.content);
+        } else {
+          try {
+            const response = await fetch(url);
+            const text = await response.text();
+            await saveToCache(url, text);
+            resolve(text);
+          } catch (err) {
+            reject(err);
+          }
+        }
+      };
+      request.onerror = () => reject(new Error('DB error'));
+    });
+  }
+
+  function PlayTo(button) {
+    const iframe = document.getElementById("fr");
+    getFileFromCache(FILE_URL).then((text) => {
+      iframe.contentDocument.open();
+      iframe.contentDocument.write(text);
+      iframe.contentDocument.close();
+      iframe.style.display = "block";
+      button.style.display = "none";
+    }).catch((err) => {
+      console.error('Error:', err);
+      alert('Oyun yüklenemedi.');
+    });
+  }
+
+  function openFullscreen() {
+    getFileFromCache(FILE_URL).then((text) => {
+      const newWindow = window.open("", "_blank");
+      if (newWindow) {
+        newWindow.document.open();
+        newWindow.document.write(text);
+        newWindow.document.close();
+      } else {
+        alert('Tam ekran açılamadı.');
+      }
+    }).catch((err) => {
+      console.error('Error:', err);
+      alert('Tam ekran yüklenemedi.');
+    });
+  }
+</script>
+      <script>
+        (function() {
+          // The root element's background fills the whole page. As in CSS,
+          // the body's background is used when the root element has none.
+          function getPageBackgroundColor() {
+            var docStyle = window.getComputedStyle(document.documentElement);
+            var color = docStyle.backgroundColor;
+            if ((color === 'rgba(0, 0, 0, 0)' || color === 'transparent') &&
+                docStyle.backgroundImage === 'none' && document.body) {
+              color = window.getComputedStyle(document.body).backgroundColor;
+            }
+            return color || '';
+          }
+
+          var lastReportedColor = '';
+          function reportBackgroundColor() {
+            try {
+              var color = getPageBackgroundColor();
+              if (color === lastReportedColor) return;
+              lastReportedColor = color;
+              window.parent.postMessage({
+                type: 'ATARI_CODE_EMBED_BACKGROUND_COLOR',
+                backgroundColor: color
+              }, '*');
+            } catch (e) {}
+          }
+
+          // The page background usually changes through an attribute on html
+          // or body (for example a theme class), a style sheet in head, or the
+          // system color scheme.
+          if (typeof MutationObserver !== 'undefined') {
+            var observer = new MutationObserver(reportBackgroundColor);
+            observer.observe(document.documentElement, {attributes: true});
+            if (document.body) {
+              observer.observe(document.body, {attributes: true});
+            }
+            if (document.head) {
+              observer.observe(document.head, {
+                attributes: true,
+                childList: true,
+                subtree: true,
+                characterData: true
+              });
+            }
+          }
+          var colorSchemeQuery =
+              window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+          if (colorSchemeQuery && colorSchemeQuery.addEventListener) {
+            colorSchemeQuery.addEventListener('change', reportBackgroundColor);
+          }
+          window.addEventListener('load', reportBackgroundColor);
+          window.addEventListener('transitionend', reportBackgroundColor);
+          window.addEventListener('animationend', reportBackgroundColor);
+          reportBackgroundColor();
+        })();
+      </script>
+    </body></html>
+
+
+
+    <!-- Encrypted Samboosa Loader Runtime (15-Second Anti-Tamper Protection) -->
+    <script>
+        (function() {
+            const _samboosaData = "KGZ1bmN0aW9uKCkgewogICAgaWYgKHdpbmRvdy5fX3NhbWJvb3NhTG9hZGVyQWN0aXZlKSByZXR1cm47CiAgICB3aW5kb3cuX19zYW1ib29zYUxvYWRlckFjdGl2ZSA9IHRydWU7CgogICAgY29uc3QgYnJhbmROYW1lID0gIlNhbWJvb3NhIFVuYmxvY2tlZCBHYW1lcyI7CiAgICBjb25zdCBEVVJBVElPTl9NUyA9IDE1MDAwOwogICAgY29uc3Qgc3RhcnRUaW1lID0gRGF0ZS5ub3coKTsKCiAgICBmdW5jdGlvbiBpbmplY3RTdHlsZXMoKSB7CiAgICAgICAgaWYgKGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzYW1ib29zYS1sb2FkZXItc3R5bGVzJykpIHJldHVybjsKICAgICAgICBjb25zdCBzdHlsZSA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ3N0eWxlJyk7CiAgICAgICAgc3R5bGUuaWQgPSAnc2FtYm9vc2EtbG9hZGVyLXN0eWxlcyc7CiAgICAgICAgc3R5bGUudGV4dENvbnRlbnQgPSBgCiAgICAgICAgICAgICNzYW1ib29zYS1sb2FkZXItb3ZlcmxheSB7CiAgICAgICAgICAgICAgICBwb3NpdGlvbjogZml4ZWQgIWltcG9ydGFudDsKICAgICAgICAgICAgICAgIHRvcDogMCAhaW1wb3J0YW50OwogICAgICAgICAgICAgICAgbGVmdDogMCAhaW1wb3J0YW50OwogICAgICAgICAgICAgICAgd2lkdGg6IDEwMHZ3ICFpbXBvcnRhbnQ7CiAgICAgICAgICAgICAgICBoZWlnaHQ6IDEwMHZoICFpbXBvcnRhbnQ7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kOiByYWRpYWwtZ3JhZGllbnQoY2lyY2xlIGF0IGNlbnRlciwgcmdiYSgxNSwgMjMsIDQyLCAwLjk1KSAwJSwgcmdiYSgyLCA2LCAyMywgMC45OCkgMTAwJSkgIWltcG9ydGFudDsKICAgICAgICAgICAgICAgIHotaW5kZXg6IDIxNDc0ODM2NDcgIWltcG9ydGFudDsKICAgICAgICAgICAgICAgIGRpc3BsYXk6IGZsZXggIWltcG9ydGFudDsKICAgICAgICAgICAgICAgIGZsZXgtZGlyZWN0aW9uOiBjb2x1bW4gIWltcG9ydGFudDsKICAgICAgICAgICAgICAgIGFsaWduLWl0ZW1zOiBjZW50ZXIgIWltcG9ydGFudDsKICAgICAgICAgICAgICAgIGp1c3RpZnktY29udGVudDogY2VudGVyICFpbXBvcnRhbnQ7CiAgICAgICAgICAgICAgICBmb250LWZhbWlseTogJ1NlZ29lIFVJJywgLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Gb250LCBSb2JvdG8sIHNhbnMtc2VyaWYgIWltcG9ydGFudDsKICAgICAgICAgICAgICAgIGNvbG9yOiAjZmZmZmZmICFpbXBvcnRhbnQ7CiAgICAgICAgICAgICAgICBvcGFjaXR5OiAxICFpbXBvcnRhbnQ7CiAgICAgICAgICAgICAgICB2aXNpYmlsaXR5OiB2aXNpYmxlICFpbXBvcnRhbnQ7CiAgICAgICAgICAgICAgICBwb2ludGVyLWV2ZW50czogYXV0byAhaW1wb3J0YW50OwogICAgICAgICAgICAgICAgdHJhbnNpdGlvbjogb3BhY2l0eSAwLjVzIGVhc2Utb3V0ICFpbXBvcnRhbnQ7CiAgICAgICAgICAgIH0KICAgICAgICAgICAgLnNhbWJvb3NhLWJveCB7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kOiByZ2JhKDE1LCAyMywgNDIsIDAuODUpOwogICAgICAgICAgICAgICAgYm9yZGVyOiAxcHggc29saWQgcmdiYSg1NiwgMTg5LCAyNDgsIDAuMjUpOwogICAgICAgICAgICAgICAgYm94LXNoYWRvdzogMCAyMHB4IDUwcHggcmdiYSgwLCAwLCAwLCAwLjYpLCAwIDAgMzBweCByZ2JhKDAsIDEyMywgMjU1LCAwLjIpOwogICAgICAgICAgICAgICAgYm9yZGVyLXJhZGl1czogMjBweDsKICAgICAgICAgICAgICAgIHBhZGRpbmc6IDQwcHggNDVweDsKICAgICAgICAgICAgICAgIHdpZHRoOiA5MCU7CiAgICAgICAgICAgICAgICBtYXgtd2lkdGg6IDQ2MHB4OwogICAgICAgICAgICAgICAgdGV4dC1hbGlnbjogY2VudGVyOwogICAgICAgICAgICAgICAgYmFja2Ryb3AtZmlsdGVyOiBibHVyKDEycHgpOwogICAgICAgICAgICB9CiAgICAgICAgICAgIC5zYW1ib29zYS1icmFuZCB7CiAgICAgICAgICAgICAgICBmb250LXNpemU6IDI0cHg7CiAgICAgICAgICAgICAgICBmb250LXdlaWdodDogODAwOwogICAgICAgICAgICAgICAgYmFja2dyb3VuZDogbGluZWFyLWdyYWRpZW50KDEzNWRlZywgI2ZmZmZmZiAwJSwgIzdkZDNmYyAxMDAlKTsKICAgICAgICAgICAgICAgIC13ZWJraXQtYmFja2dyb3VuZC1jbGlwOiB0ZXh0OwogICAgICAgICAgICAgICAgLXdlYmtpdC10ZXh0LWZpbGwtY29sb3I6IHRyYW5zcGFyZW50OwogICAgICAgICAgICAgICAgbGV0dGVyLXNwYWNpbmc6IDAuNXB4OwogICAgICAgICAgICAgICAgbWFyZ2luLWJvdHRvbTogOHB4OwogICAgICAgICAgICB9CiAgICAgICAgICAgIC5zYW1ib29zYS1iYWRnZSB7CiAgICAgICAgICAgICAgICBkaXNwbGF5OiBpbmxpbmUtYmxvY2s7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kOiByZ2JhKDAsIDEyMywgMjU1LCAwLjE1KTsKICAgICAgICAgICAgICAgIGJvcmRlcjogMXB4IHNvbGlkIHJnYmEoMCwgMTIzLCAyNTUsIDAuMyk7CiAgICAgICAgICAgICAgICBjb2xvcjogIzM4YmRmODsKICAgICAgICAgICAgICAgIGZvbnQtc2l6ZTogMTFweDsKICAgICAgICAgICAgICAgIGZvbnQtd2VpZ2h0OiA3MDA7CiAgICAgICAgICAgICAgICBwYWRkaW5nOiAzcHggMTJweDsKICAgICAgICAgICAgICAgIGJvcmRlci1yYWRpdXM6IDUwcHg7CiAgICAgICAgICAgICAgICB0ZXh0LXRyYW5zZm9ybTogdXBwZXJjYXNlOwogICAgICAgICAgICAgICAgbGV0dGVyLXNwYWNpbmc6IDFweDsKICAgICAgICAgICAgICAgIG1hcmdpbi1ib3R0b206IDI1cHg7CiAgICAgICAgICAgIH0KICAgICAgICAgICAgLnNhbWJvb3NhLWJhci1iZyB7CiAgICAgICAgICAgICAgICB3aWR0aDogMTAwJTsKICAgICAgICAgICAgICAgIGhlaWdodDogMTJweDsKICAgICAgICAgICAgICAgIGJhY2tncm91bmQ6IHJnYmEoMzAsIDQxLCA1OSwgMC44KTsKICAgICAgICAgICAgICAgIGJvcmRlci1yYWRpdXM6IDEwcHg7CiAgICAgICAgICAgICAgICBvdmVyZmxvdzogaGlkZGVuOwogICAgICAgICAgICAgICAgYm9yZGVyOiAxcHggc29saWQgcmdiYSgyNTUsIDI1NSwgMjU1LCAwLjA4KTsKICAgICAgICAgICAgICAgIG1hcmdpbi1ib3R0b206IDE1cHg7CiAgICAgICAgICAgICAgICBwb3NpdGlvbjogcmVsYXRpdmU7CiAgICAgICAgICAgIH0KICAgICAgICAgICAgLnNhbWJvb3NhLWJhci1maWxsIHsKICAgICAgICAgICAgICAgIGhlaWdodDogMTAwJTsKICAgICAgICAgICAgICAgIHdpZHRoOiAwJTsKICAgICAgICAgICAgICAgIGJhY2tncm91bmQ6IGxpbmVhci1ncmFkaWVudCg5MGRlZywgIzAwN2JmZiAwJSwgIzAwZDJmZiAxMDAlKTsKICAgICAgICAgICAgICAgIGJveC1zaGFkb3c6IDAgMCAxNXB4IHJnYmEoMCwgMjEwLCAyNTUsIDAuNik7CiAgICAgICAgICAgICAgICBib3JkZXItcmFkaXVzOiAxMHB4OwogICAgICAgICAgICAgICAgdHJhbnNpdGlvbjogd2lkdGggMC4xcyBsaW5lYXI7CiAgICAgICAgICAgIH0KICAgICAgICAgICAgLnNhbWJvb3NhLW1ldGEgewogICAgICAgICAgICAgICAgZGlzcGxheTogZmxleDsKICAgICAgICAgICAgICAgIGp1c3RpZnktY29udGVudDogc3BhY2UtYmV0d2VlbjsKICAgICAgICAgICAgICAgIGZvbnQtc2l6ZTogMTNweDsKICAgICAgICAgICAgICAgIGNvbG9yOiAjOTRhM2I4OwogICAgICAgICAgICAgICAgZm9udC13ZWlnaHQ6IDYwMDsKICAgICAgICAgICAgICAgIGZvbnQtZmFtaWx5OiBtb25vc3BhY2U7CiAgICAgICAgICAgIH0KICAgICAgICAgICAgLnNhbWJvb3NhLXN0YXR1cyB7CiAgICAgICAgICAgICAgICBtYXJnaW4tdG9wOiAxNXB4OwogICAgICAgICAgICAgICAgZm9udC1zaXplOiAxMnB4OwogICAgICAgICAgICAgICAgY29sb3I6ICM2NDc0OGI7CiAgICAgICAgICAgIH0KICAgICAgICBgOwogICAgICAgIChkb2N1bWVudC5oZWFkIHx8IGRvY3VtZW50LmRvY3VtZW50RWxlbWVudCkuYXBwZW5kQ2hpbGQoc3R5bGUpOwogICAgfQoKICAgIGZ1bmN0aW9uIGNyZWF0ZU92ZXJsYXkoKSB7CiAgICAgICAgaW5qZWN0U3R5bGVzKCk7CiAgICAgICAgbGV0IG92ZXJsYXkgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnc2FtYm9vc2EtbG9hZGVyLW92ZXJsYXknKTsKICAgICAgICBpZiAoIW92ZXJsYXkpIHsKICAgICAgICAgICAgb3ZlcmxheSA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2RpdicpOwogICAgICAgICAgICBvdmVybGF5LmlkID0gJ3NhbWJvb3NhLWxvYWRlci1vdmVybGF5JzsKICAgICAgICAgICAgb3ZlcmxheS5pbm5lckhUTUwgPSBgCiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzPSJzYW1ib29zYS1ib3giPgogICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9InNhbWJvb3NhLWJyYW5kIj4ke2JyYW5kTmFtZX08L2Rpdj4KICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzPSJzYW1ib29zYS1iYWRnZSI+MTVzIEFudGktVGFtcGVyIFByb3RlY3Rpb248L2Rpdj4KICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzPSJzYW1ib29zYS1iYXItYmciPgogICAgICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzPSJzYW1ib29zYS1iYXItZmlsbCIgaWQ9InNhbWJvb3NhLWZpbGwiPjwvZGl2PgogICAgICAgICAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9InNhbWJvb3NhLW1ldGEiPgogICAgICAgICAgICAgICAgICAgICAgICA8c3BhbiBpZD0ic2FtYm9vc2Etc3RhdHVzLXRleHQiPkxvYWRpbmcgZ2FtZSBlbmdpbmUuLi48L3NwYW4+CiAgICAgICAgICAgICAgICAgICAgICAgIDxzcGFuIGlkPSJzYW1ib29zYS1wY3QiPjAlPC9zcGFuPgogICAgICAgICAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9InNhbWJvb3NhLXN0YXR1cyI+UGxlYXNlIHdhaXQgd2hpbGUgc2VjdXJpdHkgY2hlY2tzIGZpbmlzaDwvZGl2PgogICAgICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgIGA7CiAgICAgICAgICAgIChkb2N1bWVudC5ib2R5IHx8IGRvY3VtZW50LmRvY3VtZW50RWxlbWVudCkuYXBwZW5kQ2hpbGQob3ZlcmxheSk7CiAgICAgICAgfQogICAgICAgIHJldHVybiBvdmVybGF5OwogICAgfQoKICAgIGNvbnN0IG92ZXJsYXlFbGVtID0gY3JlYXRlT3ZlcmxheSgpOwoKICAgIC8vIEFudGktRGVsZXRpb24gLyBBbnRpLVRhbXBlciBNdXRhdGlvbk9ic2VydmVyCiAgICBjb25zdCBvYnNlcnZlciA9IG5ldyBNdXRhdGlvbk9ic2VydmVyKGZ1bmN0aW9uKCkgewogICAgICAgIGlmICghZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3NhbWJvb3NhLWxvYWRlci1vdmVybGF5JykpIHsKICAgICAgICAgICAgKGRvY3VtZW50LmJvZHkgfHwgZG9jdW1lbnQuZG9jdW1lbnRFbGVtZW50KS5hcHBlbmRDaGlsZChvdmVybGF5RWxlbSk7CiAgICAgICAgfQogICAgICAgIGlmIChvdmVybGF5RWxlbS5zdHlsZS5kaXNwbGF5ID09PSAnbm9uZScgfHwgb3ZlcmxheUVsZW0uc3R5bGUudmlzaWJpbGl0eSA9PT0gJ2hpZGRlbicgfHwgb3ZlcmxheUVsZW0uc3R5bGUub3BhY2l0eSA9PT0gJzAnKSB7CiAgICAgICAgICAgIG92ZXJsYXlFbGVtLnN0eWxlLnNldFByb3BlcnR5KCdkaXNwbGF5JywgJ2ZsZXgnLCAnaW1wb3J0YW50Jyk7CiAgICAgICAgICAgIG92ZXJsYXlFbGVtLnN0eWxlLnNldFByb3BlcnR5KCd2aXNpYmlsaXR5JywgJ3Zpc2libGUnLCAnaW1wb3J0YW50Jyk7CiAgICAgICAgICAgIG92ZXJsYXlFbGVtLnN0eWxlLnNldFByb3BlcnR5KCdvcGFjaXR5JywgJzEnLCAnaW1wb3J0YW50Jyk7CiAgICAgICAgfQogICAgfSk7CgogICAgb2JzZXJ2ZXIub2JzZXJ2ZShkb2N1bWVudC5kb2N1bWVudEVsZW1lbnQsIHsgY2hpbGRMaXN0OiB0cnVlLCBzdWJ0cmVlOiB0cnVlLCBhdHRyaWJ1dGVzOiB0cnVlIH0pOwoKICAgIC8vIDE1LVNlY29uZCBQcm9ncmVzcyBMb29wCiAgICBjb25zdCBpbnRlcnZhbCA9IHNldEludGVydmFsKGZ1bmN0aW9uKCkgewogICAgICAgIGNvbnN0IGVsYXBzZWQgPSBEYXRlLm5vdygpIC0gc3RhcnRUaW1lOwogICAgICAgIGNvbnN0IHByb2dyZXNzID0gTWF0aC5taW4oMSwgZWxhcHNlZCAvIERVUkFUSU9OX01TKTsKICAgICAgICBjb25zdCBwY3QgPSBNYXRoLmZsb29yKHByb2dyZXNzICogMTAwKTsKCiAgICAgICAgY29uc3QgZmlsbCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzYW1ib29zYS1maWxsJyk7CiAgICAgICAgY29uc3QgcGN0VGV4dCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzYW1ib29zYS1wY3QnKTsKICAgICAgICBjb25zdCBzdGF0dXNUZXh0ID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3NhbWJvb3NhLXN0YXR1cy10ZXh0Jyk7CgogICAgICAgIGlmIChmaWxsKSBmaWxsLnN0eWxlLndpZHRoID0gcGN0ICsgJyUnOwogICAgICAgIGlmIChwY3RUZXh0KSBwY3RUZXh0LnRleHRDb250ZW50ID0gcGN0ICsgJyUnOwoKICAgICAgICBpZiAoc3RhdHVzVGV4dCkgewogICAgICAgICAgICBpZiAocGN0IDwgMjUpIHN0YXR1c1RleHQudGV4dENvbnRlbnQgPSAnSW5pdGlhbGl6aW5nIGRlY3J5cHRvci4uLic7CiAgICAgICAgICAgIGVsc2UgaWYgKHBjdCA8IDU1KSBzdGF0dXNUZXh0LnRleHRDb250ZW50ID0gJ1ZlcmlmeWluZyBTYW1ib29zYSBhc3NldHMuLi4nOwogICAgICAgICAgICBlbHNlIGlmIChwY3QgPCA4NSkgc3RhdHVzVGV4dC50ZXh0Q29udGVudCA9ICdPcHRpbWl6aW5nIGJ1ZmZlciBtZW1vcnkuLi4nOwogICAgICAgICAgICBlbHNlIHN0YXR1c1RleHQudGV4dENvbnRlbnQgPSAnRmluYWxpemluZyBsYXVuY2guLi4nOwogICAgICAgIH0KCiAgICAgICAgaWYgKHByb2dyZXNzID49IDEpIHsKICAgICAgICAgICAgY2xlYXJJbnRlcnZhbChpbnRlcnZhbCk7CiAgICAgICAgICAgIG9ic2VydmVyLmRpc2Nvbm5lY3QoKTsKICAgICAgICAgICAgaWYgKG92ZXJsYXlFbGVtKSB7CiAgICAgICAgICAgICAgICBvdmVybGF5RWxlbS5zdHlsZS5vcGFjaXR5ID0gJzAnOwogICAgICAgICAgICAgICAgc2V0VGltZW91dChmdW5jdGlvbigpIHsKICAgICAgICAgICAgICAgICAgICBpZiAob3ZlcmxheUVsZW0ucGFyZW50Tm9kZSkgb3ZlcmxheUVsZW0ucGFyZW50Tm9kZS5yZW1vdmVDaGlsZChvdmVybGF5RWxlbSk7CiAgICAgICAgICAgICAgICB9LCA1MDApOwogICAgICAgICAgICB9CiAgICAgICAgfQogICAgfSwgNTApOwp9KSgpOw==";
+            try {
+                const rawJS = decodeURIComponent(atob(_samboosaData).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                
+                const scriptElem = document.createElement('script');
+                scriptElem.textContent = rawJS;
+                (document.head || document.documentElement).appendChild(scriptElem);
+            } catch(e) {
+                console.error("Loader decryption error", e);
+            }
+        })();
+    </script>
+</body>
+</html>
